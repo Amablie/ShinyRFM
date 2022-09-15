@@ -11,7 +11,7 @@ library(shinydashboard)
 library(shinyjs)
 # library(shinythemes)
 library(reactable)
-library(waiter)
+# library(waiter)
 
 # Define UI for application that draws a histogram
 

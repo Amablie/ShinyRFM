@@ -5,7 +5,7 @@ library(anytime)
 library(rfm)
 library(tidyverse)
 library(DT)
-# library(reactable)
+library(reactable)
 
 ####################################################################################################################
 
