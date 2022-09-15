@@ -9,7 +9,7 @@
 
 library(shinydashboard)
 library(shinyjs)
-library(shinythemes)
+# library(shinythemes)
 library(reactable)
 library(waiter)
 
@@ -124,6 +124,7 @@ dashboardPage( skin = "black",
                
                
                dashboardBody( fluidPage(
+                 fluidRow(
                  box( "MAPA DE CALOR",
                       width = 6,
                       plotOutput("PLOT_MAPACALOR")
@@ -132,11 +133,12 @@ dashboardPage( skin = "black",
                  box(" VOLUME DE CLIENTES POR CATEGORIA ",
                      width = 6,
                      plotOutput("PLOT_SEGMENTOS")
-                 ),
+                 )
+            ),
                  
-                 box( "Tabela RFM",
+                fluidRow( box( "Tabela RFM",
                       width = 12,
-                      tableOutput("SCORE")
+                      tableOutput("SCORE"))
                  ),
                  
                  
