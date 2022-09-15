@@ -9,22 +9,21 @@ library(reactable)
 
 ####################################################################################################################
 
-
-
-
 online_retail <- read.csv("datasets/OnlineRetail.csv",
                           dec = ".", sep = ",", header = T)
 
-
 data <- read.csv("datasets/scanner_data.csv",
                  dec = ".", sep = ",", header = T)
+
+cust_segment <- read.csv("datasets/customer_segmentation_100k.csv",
+                         dec = ".", sep = ",", header = T)
 
 head(data)
 head(online_retail)
 
 str(data)
 str(online_retail)
-# 
+
 # SELECTED <- function(base, ID , price, order_date){
 #   select(base, 
 #          ID , 
@@ -37,10 +36,10 @@ str(online_retail)
 data_clean <- function(dtframe, price, order_date ) {
   
   # '%d.%m.%Y %H:%M'
-  # as.Date(order_date)
+  # as.Date(order_date, format = "%Y-%m-%d")
   
   x <- dtframe %>% 
-    mutate(Order_date = as.Date(order_date, c("%m-%d-%y", "%m/%d/%y")),
+    mutate(Order_date = as.Date(order_date, format = "%Y-%m-%d"),
            Total_Price = replace(price, price<=0, NA))
   ## LIMPA NA
   df_data <-drop_na(x)
@@ -51,12 +50,12 @@ data_clean <- function(dtframe, price, order_date ) {
 
 ### SELECIONA AS COLUNAS DA BASE
 
-# lista_colunas<- function(x){
-#   lista <-colnames(x)
-#   return(lista)} 
+lista_colunas<- function(x){
+  lista <-colnames(x)
+  return(lista)} 
 ## LISTA DE COLUNAS
 
-# colunas_choices <- lista_colunas(online_retail)
+colunas_choices <- lista_colunas(online_retail)
 
 
 
@@ -68,11 +67,11 @@ data_clean <- function(dtframe, price, order_date ) {
 #   mutate(Total_Price = Quantity*Price,
 #          teste = anydate(InvoiceDate))  
 
+# str(base)
 
 tab_base <- data_clean(online_retail, 
                        online_retail$UnitPrice, 
                        online_retail$InvoiceDate)
-
 
 
 str(tab_base)
@@ -81,35 +80,40 @@ head(tab_base)
 
 
 
-database <- data_clean(data, 
-                       data$Sales_Amount, 
-                       data$Date )
+dataclear <- data_clean(data, 
+                        data$Sales_Amount, 
+                        data$Date )
 
-str(database)
+
+str(dataclear)
+
+
+cust_seg <- data_clean(cust_segment,
+                       cust_segment$total_spent,
+                       cust_segment$last_order)
 
 # -------------------------------------------------------------------------
 
 ### DATA DE CORTE
-analysis.date <- 
-  anydate("11-01-2015")
+analysis.date <- Sys.Date()
 
 ### CALCULO SCORE
+# rfm_result <- rfm_table_order(
+#   data = dataclear,
+#   customer_id = Customer_ID,
+#   revenue = Sales_Amount,
+#   order_date = Date,
+#   analysis_date = analysis.date
+# )
+
 rfm_result <- rfm_table_order(
-  data = tab_base,
-  customer_id = CustomerID,
-  revenue =  UnitPrice,
-  order_date = InvoiceDate,
+  data = cust_seg,
+  customer_id = customer_id,
+  revenue = Total_Price,
+  order_date = Order_date,
   analysis_date = analysis.date
 )
 
-
-rfm_res <- rfm_table_order(
-  data = database,
-  customer_id = Customer_ID,
-  revenue =  Sales_Amount,
-  order_date = Date,
-  analysis_date = Sys.Date()
-)
 
 ### CALCULO SEGMENTO
 
@@ -165,7 +169,6 @@ rfm_plot_total_segment <- function(segment){
 
 
 rfm_plot_total_segment(segmentoss)
-
 
 
 

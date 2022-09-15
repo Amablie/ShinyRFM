@@ -12,6 +12,7 @@ library(shiny)
 ## AUMENTA  TAMANHO DO ARQUIVO QUE O SHINY RECEBE
 options(shiny.maxRequestSize = 3000*1024^4)
 
+
 shinyServer(function(input, output, session) {
   
   
@@ -31,13 +32,13 @@ shinyServer(function(input, output, session) {
   
   
   
-  
   ######   REATIVIDADE ---------------------------------------------------------------------------
   
   
   
   ### LEITURA DA BASE DE DADOS
   DF <- reactive({
+    
     req(input$FILECSV)
     
     df <- read.csv(input$FILECSV$datapath,
@@ -46,41 +47,28 @@ shinyServer(function(input, output, session) {
                    dec = input$dec,
                    quote = input$quote)
     
+    return(df)
+    
   })
-  
-  
-  ### LISTA DE COLUNAS
-  # LIST_COL <- reactive({
-  #   
-  # 
-  #   
-  #   lista_colunas(x = DF())
-  # })
-  
   
   
   ### LIMPEZA DA BASE DE DADOS
   LIMPEZA <- reactive({
-    # df <- read.csv(input$FILECSV$datapath,
-    #                header = input$header,
-    #                sep = input$sep,
-    #                dec = input$dec,
-    #                quote = input$quote)
+    (req$page_32)
     
     data_clean(
       dtframe = DF(),
       price = input$PRECO ,
       order_date = input$PEDIDO
     )
-  }
-  )
+  })
   
   
   
   
   ### DATA DE CORTE
   DATE <- reactive({
-    anydate(input$DATE)
+    input$DATE
   })
   
   
@@ -89,15 +77,20 @@ shinyServer(function(input, output, session) {
   RFM <- reactive({
     
     req(input$ACTION)
+    df <- read.csv(input$FILECSV$datapath,
+                   header = input$header,
+                   sep = input$sep,
+                   dec = input$dec,
+                   quote = input$quote)
     
-    tb <- LIMPEZA()
     
+    tb <- LIMPEZA(df)
     
     rfm_table_order(
       data = tb,
       customer_id = input$ID,
-      revenue = input$PRECO,
-      order_date = input$PEDIDO,
+      revenue = Total_Price,
+      order_date = Order_Date,
       analysis_date = DATE
     )
   })
@@ -187,25 +180,9 @@ shinyServer(function(input, output, session) {
   
   output$SCORE <- renderTable({
     req(input$ACTION)
-    
-    tb <- LIMPEZA()
-    
-    RFM(
-      data = tb,
-      customer_id = input$ID,
-      revenue = Total_Price,
-      order_date = Order_date,
-      analysis_date = DATE
-    )
-    
-    segment <- SEGMENTO(
-      rfm = RFM(
-        data = tb,
-        customer_id = input$ID,
-        revenue = input$PRECO,
-        order_date = input$PEDIDO,
-        analysis_date = DATE
-      )
+    df <- RFM()
+    segment <- SEGMENTO( tb
+                         
     )
     
     if(input$ACTION != 0) {
@@ -243,5 +220,9 @@ shinyServer(function(input, output, session) {
   
   
 })  
+
+
+
+
 
 

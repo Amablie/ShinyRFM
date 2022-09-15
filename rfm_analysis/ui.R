@@ -11,7 +11,7 @@ library(shinydashboard)
 library(shinyjs)
 # library(shinythemes)
 library(reactable)
-# library(waiter)
+library(waiter)
 
 # Define UI for application that draws a histogram
 
@@ -111,7 +111,7 @@ dashboardPage( skin = "black",
                             
                             ### Data de corte da analise
                             fluidPage(
-                              dateInput("DATE", label = h3("Data"), value = "2015-11-11")),
+                              dateInput("DATE", label = h3("Data"), value = "2022-01-01")),
                             
                             # Copy the line below to make an action button
                             actionButton("ACTION", label = "Executar"),
@@ -125,20 +125,20 @@ dashboardPage( skin = "black",
                
                dashboardBody( fluidPage(
                  fluidRow(
-                 box( "MAPA DE CALOR",
-                      width = 6,
-                      plotOutput("PLOT_MAPACALOR")
+                   box( "MAPA DE CALOR",
+                        width = 6,
+                        plotOutput("PLOT_MAPACALOR")
+                   ),
+                   
+                   box(" VOLUME DE CLIENTES POR CATEGORIA ",
+                       width = 6,
+                       plotOutput("PLOT_SEGMENTOS")
+                   )
                  ),
                  
-                 box(" VOLUME DE CLIENTES POR CATEGORIA ",
-                     width = 6,
-                     plotOutput("PLOT_SEGMENTOS")
-                 )
-            ),
-                 
-                fluidRow( box( "Tabela RFM",
-                      width = 12,
-                      tableOutput("SCORE"))
+                 fluidRow( box( "Tabela RFM",
+                                width = 12,
+                                tableOutput("SCORE"))
                  ),
                  
                  
