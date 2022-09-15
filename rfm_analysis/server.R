@@ -12,11 +12,12 @@ library(shiny)
 ## AUMENTA  TAMANHO DO ARQUIVO QUE O SHINY RECEBE
 options(shiny.maxRequestSize = 3000*1024^4)
 
-
 shinyServer(function(input, output, session) {
   
   
   ### TROCA DE PAGINA NA ETAPA DE SUBIR OS DADOS ------------------------------------------------------------
+  
+  
   observeEvent(input$controller, {
     updateTabsetPanel(inputId = "switcher", selected = input$controller)
   })
@@ -36,93 +37,13 @@ shinyServer(function(input, output, session) {
   
   
   
-  ### LEITURA DA BASE DE DADOS
+  ################ LEITURA DA BASE DE DADOS
+  
+  
   DF <- reactive({
     
     req(input$FILECSV)
     
-    df <- read.csv(input$FILECSV$datapath,
-                   header = input$header,
-                   sep = input$sep,
-                   dec = input$dec,
-                   quote = input$quote)
-    
-    return(df)
-    
-  })
-  
-  
-  ### LIMPEZA DA BASE DE DADOS
-  LIMPEZA <- reactive({
-    (req$page_32)
-    
-    data_clean(
-      dtframe = DF(),
-      price = input$PRECO ,
-      order_date = input$PEDIDO
-    )
-  })
-  
-  
-  
-  
-  ### DATA DE CORTE
-  DATE <- reactive({
-    input$DATE
-  })
-  
-  
-  
-  ### CALCULO RFM
-  RFM <- reactive({
-    
-    req(input$ACTION)
-    df <- read.csv(input$FILECSV$datapath,
-                   header = input$header,
-                   sep = input$sep,
-                   dec = input$dec,
-                   quote = input$quote)
-    
-    
-    tb <- LIMPEZA(df)
-    
-    rfm_table_order(
-      data = tb,
-      customer_id = input$ID,
-      revenue = Total_Price,
-      order_date = Order_Date,
-      analysis_date = DATE
-    )
-  })
-  
-  
-  
-  ### CLASSIFICAÃÃO DOS SEGMENTOS
-  SEGMENTO <- reactive({
-    SEGMENT_RESULT()
-    
-  })
-  
-  
-  
-  # GRAFICO CLASSIFICACAO
-  
-  GRAF_CLIENT <- reactive({
-    rfm_plot_total_segment()
-  })
-  
-  
-  MAPA_CALOR <- reactive({
-    rfm_heatmap()}
-  )
-  
-  ### BASE DE DADOS ORIGINAL --------------------------------------------------
-  
-  output$TABLE <- renderDataTable({
-    
-    req(input$FILECSV)
-    
-    ##### tentativa de rodar
     tryCatch(
       {
         df <- read.csv(input$FILECSV$datapath,
@@ -135,26 +56,91 @@ shinyServer(function(input, output, session) {
         stop(safeError(e))
       }
     )
-    if(input$UPLOAD != 0) {
-      return(datatable(df))
-    }
-    else {
-      return("Clique em upload")
-    }
     
-    # if(input$disp == "head") {
-    #   return(head(df))
-    # }
-    # else {
-    #   return(df)
-    # }
+  })
+  
+  
+  ############# LIMPEZA DA BASE DE DADOS
+  # 
+  # TRATAMENTO <- reactive({
+  #   
+  #   data_clean( dtframe = DF(),
+  #               price = DF()$input$PRECO ,
+  #               order_date = DF()$input$PEDIDO)
+  # })   
+  # 
+  # 
+  
+  
+  
+  ############# DATA DE CORTE
+  
+  
+  # DATE <- reactive({
+  #   input$DATE
+  # })
+  # 
+  
+  
+  ########### CALCULO RFM
+  
+  #   
+  # RFM <- reactive({
+  #   
+  #     tb <- TRATATMENTO()
+  #     
+  #       rfm_table_order(
+  #       data = tb,
+  #       customer_id = input$ID,
+  #       revenue = Total_Price,
+  #       order_date = Order_date,
+  #       analysis_date = input$DATE
+  #     )
+  #   })
+  
+  
+  
+  
+  
+  ############ SEGMENTOS
+  
+  
+  SEGMENTO <- eventReactive(input$ACTION, {
     
+    ## TRATAMENTO
+    tb <- data_clean( dtframe = DF(),
+                      price = DF()$input$PRECO ,
+                      order_date = DF()$input$PEDIDO)
+    ## CALCULO RFM
+    rfm_results <- rfm_table_order(
+      data = tb,
+      customer_id = input$ID,
+      revenue = Total_Price,
+      order_date = Order_date,
+      analysis_date = input$DATE)
+    
+    ## SEGMENTOS
+    SEGMENT_RESULT(rfm_results)
+  })
+  
+  
+  
+  ####### GRAFICO CLASSIFICACAO
+  
+  GRAF_CLIENT <- reactive({
+    rfm_plot_total_segment()
+  })
+  
+  ######## GRAFICO DO MAPA DE CALOR
+  
+  MAPA_CALOR <- reactive({
+    rfm_heatmap()
     
   })
   
   
   
-  # ALTERA COLUNAS ----------------------------------------------------------
+  ##################  ATUALIZA COLUNAS NA PAGINA 2 ########################################################################
   
   observeEvent(eventExpr = input$page_12,
                handlerExpr = {
@@ -177,52 +163,104 @@ shinyServer(function(input, output, session) {
   
   
   
+  ### BASE DE DADOS ORIGINAL ############################################################################
   
-  output$SCORE <- renderTable({
-    req(input$ACTION)
-    df <- RFM()
-    segment <- SEGMENTO( tb
-                         
-    )
+  output$TABLE <- renderDataTable({
     
-    if(input$ACTION != 0) {
-      return(head(segment))
+    req(input$FILECSV)
+    
+    ##### tentativa de rodar
+    tryCatch(
+      {
+        df <- read.csv(input$FILECSV$datapath,
+                       header = input$header,
+                       sep = input$sep,
+                       dec = input$dec,
+                       quote = input$quote)
+      },
+      error = function(e) {
+        stop(safeError(e))
+      }
+    )
+    if(input$UPLOAD != 0) {
+      return(datatable(head(df)))
     }
     else {
-      return("Clique em Executar")
+      return("Clique em upload")
     }
+    
+    # if(input$disp == "head") {
+    #   return(head(df))
+    # }
+    # else {
+    #   return(df)
+    # }
+    
+    
   })
   
   
-  ### Mostra base de dados original
+  
+  ########  MAPA DE CALOR  ######################################################################
   
   
   output$PLOT_MAPACALOR <- renderPlot({
     
     req(input$ACTION)
     
+    RFM() %>% 
+      MAPA_CALOR()
     
-    resultado <- RFM()
-    MAPA_CALOR(resultado)
+    
   })
   
+  
+  ############ GRAFICOS SEGMENTOS  ##########################################################################
   
   output$PLOT_SEGMENTOS <- renderPlot({
     
     req(input$ACTION)
     
     
-    seg_results <- SEGMENTO(
-      RFM())
+    seg_results <- SEGMENTO()
     
     GRAF_CLIENT(seg_results)
   })
   
   
+  
+  
+  
+  
+  ########  TABELA RFM  ##################################################################
+  
+  
+  output$SCORE <-  renderTable({
+    # req(input$ACTION)
+    # withProgress(message = 'Calculation in progress',
+    #              detail = 'This may take a while...', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(5)
+    #                }
+    #              })
+    
+    
+    
+    SEGMENTO()
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 })  
-
-
-
-
 
 
