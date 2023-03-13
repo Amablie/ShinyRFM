@@ -7,21 +7,23 @@ library(tidyverse)
 library(DT)
 library(reactable)
 
+
+getwd()
 ####################################################################################################################
 ## CARREGANDO BASE DE DADOS
-online_retail <- read.csv("Estatistica/2022_01/Dashboards/bases/OnlineRetail.csv",
+online_retail <- read.csv("datasets/OnlineRetail.csv",
                           dec = ".", sep = ",", header = T)
 
-data <- read.csv("Estatistica/2022_01/Dashboards/bases/scanner_data.csv",
+data <- read.csv("datasets/scanner_data.csv",
                  dec = ".", sep = ",", header = T)
 
-cust_segment <- read.csv("Estatistica/2022_01/Dashboards/bases/customer_segmentation_10k.csv",
+cust_segment <- read.csv("datasets/customer_segmentation_10k.csv",
                          dec = ".", sep = ",", header = T)
 
-head(data)
+head(cust_segment)
 head(online_retail)
 
-str(data)
+str(cust_segment)
 str(online_retail)
 
 # SELECTED <- function(base, ID , price, order_date){
@@ -39,8 +41,7 @@ data_clean <- function(dtframe, price, order_date ) {
   # as.Date(order_date, format = "%Y-%m-%d")
   
   x <- dtframe %>% 
-    mutate(Order_date = as.Date(order_date, format = "%Y-%M-%D"),
-           Total_Price = replace(price, price<=0, NA))
+    mutate(Order_date = as.Date(order_date, format = "%Y-%M-%D"))
   ## LIMPA NA
   df_data <-drop_na(x)
   
@@ -154,7 +155,6 @@ SEGMENT_RESULT(
   rfm_result
 )
 
-segmentoss
 
 ## GRÃFICO QUANTIDADE POR PERFIL
 rfm_plot_total_segment <- function(segment){
@@ -172,5 +172,5 @@ rfm_plot_total_segment <- function(segment){
 }
 
 
-rfm_plot_total_segment(segmentoss)
+rfm_plot_total_segment()
 
